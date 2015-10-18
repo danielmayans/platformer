@@ -51,7 +51,11 @@ public class SimpleControlVehicle : MonoBehaviour {
 	private bool isMobile = false; // Verify if it is a mobile platform.
 	private int actualGear = 0; // The actual gear that have the vehicle.
 
-    SimpleControlVehicle vehicle;
+    private SimpleControlVehicle vehicle;
+    
+    private GameObject startScreen;
+    public bool dead = false;
+    private float deathCooldown;
 
     void Awake(){
 		// Verify if it is a mobile platform.
@@ -106,17 +110,41 @@ public class SimpleControlVehicle : MonoBehaviour {
 
 	// Update is called every frame.
 	void Update(){
-		if(!isMobile){
-			vertical = Input.GetAxis ("Horizontal");
-			horizontal = Input.GetAxis("Vertical");
-			nextGear = Input.GetButtonDown("Fire1");
-			backGear = Input.GetButtonDown("Fire2");
-		}
-		if(manualTransmission)
-			ShiftGears ();
-		UpdateEngineSound ();
-		IsGrounded ();
-        isDeath();
+        if (dead)
+        {
+            deathCooldown -= Time.deltaTime;
+
+            if (deathCooldown <= 0)
+            {
+
+                startScreen = GameObject.FindGameObjectWithTag("Start");
+                var deathPlayerX = vehicle.transform.position.x;
+                var deathPlayerY = vehicle.transform.position.y;
+                startScreen.GetComponent<SpriteRenderer>().enabled = true;
+
+                startScreen.transform.position = new Vector3(deathPlayerX+30.0f, deathPlayerY+16.0f, 4.0f);
+
+                if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+                {
+                    Application.LoadLevel(Application.loadedLevel);
+                }
+            }
+        }
+        else
+        {
+            if (!isMobile)
+            {
+                vertical = Input.GetAxis("Horizontal");
+                horizontal = Input.GetAxis("Vertical");
+                nextGear = Input.GetButtonDown("Fire1");
+                backGear = Input.GetButtonDown("Fire2");
+            }
+            if (manualTransmission)
+                ShiftGears();
+            UpdateEngineSound();
+            IsGrounded();
+            isDeath();
+        }
     }
 
 	// This function is called every fixed framerate frame.
@@ -294,10 +322,11 @@ public class SimpleControlVehicle : MonoBehaviour {
     public void isDeath() {
         Vector3 rotation = vehicle.transform.eulerAngles;
 
-        if(rotation.z >= 96.0f && rotation.z <= 260.0f)
+        if(rotation.z >= 90.0f && rotation.z <= 260.0f)
         {
             if (vehicle.GetComponent<Rigidbody2D>().velocity.x <= 0){
-                Debug.Log("DEAD");
+                dead = true;
+                deathCooldown = 0.5f;
             }
         }
     }
