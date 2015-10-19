@@ -321,8 +321,8 @@ public class SimpleControlVehicle : MonoBehaviour {
 
     public void isDeath() {
         Vector3 rotation = vehicle.transform.eulerAngles;
-
-        if(rotation.z >= 90.0f && rotation.z <= 260.0f)
+        Debug.Log(rotation.z);
+        if(rotation.z >= 89.0f && rotation.z <= 260.0f)
         {
             if (vehicle.GetComponent<Rigidbody2D>().velocity.x <= 0){
                 dead = true;
